@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+langchain>=0.1.0
+langchain_community>=0.0.30
+streamlit 
