@@ -1,0 +1,181 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 243ee7c..816ecbe 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,61 +1,392 @@[m
+[31m-# SOLID 기반 LangChain + Ollama + Streamlit 챗봇[m
+[32m+[m[32m# 🤖 SOLID 기반 Multi-LLM 챗봇 프레임워크[m
+ [m
+[31m-## 개요[m
+[31m-- 이 프로젝트는 SOLID 원칙을 철저히 준수하여 설계된 대화형 챗봇 예제입니다.[m
+[31m-- LangChain, Ollama(로컬 LLM), Streamlit을 활용하여 확장성과 유지보수성이 뛰어난 구조를 제공합니다.[m
+[32m+[m[32m[![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)[m
+[32m+[m[32m[![LangChain](https://img.shields.io/badge/LangChain-Latest-green.svg)](https://www.langchain.com/)[m
+[32m+[m[32m[![SOLID](https://img.shields.io/badge/Design-SOLID-orange.svg)](https://en.wikipedia.org/wiki/SOLID)[m
+[32m+[m[32m[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)[m
+ [m
+[31m-## 주요 특징[m
+[31m-- **SOLID 원칙 준수**: 단일 책임, 개방/폐쇄, 리스코프 치환, 인터페이스 분리, 의존 역전 원칙 적용[m
+[31m-- **모듈화**: LLM, Agent, UI를 각각 분리하여 관리[m
+[31m-- **확장성**: 새로운 LLM, Tool, Agent, UI를 쉽게 추가/교체 가능[m
+[31m-- **Streamlit UI**: 웹 브라우저에서 바로 대화 가능[m
+[32m+[m[32m## 📋 개요[m
+[32m+[m
+[32m+[m[32m**SOLID 원칙**을 철저히 준수하여 설계된 확장 가능한 대화형 챗봇 프레임워크입니다.[m
+[32m+[m
+[32m+[m[32m핵심 기능:[m
+[32m+[m[32m- 🔄 **다중 LLM 지원**: Ollama(로컬) / OpenAI(클라우드) 간 동적 전환[m
+[32m+[m[32m- 🏭 **Factory 패턴**: 런타임에 LLM 제공자 선택[m
+[32m+[m[32m- 🔌 **MCP 프로토콜**: Model Context Protocol 기반 툴 서버[m
+[32m+[m[32m- 🧩 **모듈형 아키텍처**: 느슨한 결합(Loose Coupling)과 높은 응집도(High Cohesion)[m
+[32m+[m[32m- 🎨 **Streamlit UI**: 웹 기반 인터랙티브 인터페이스[m
+[32m+[m
+[32m+[m[32m## ✨ 주요 특징[m
+[32m+[m
+[32m+[m[32m### SOLID 원칙 완벽 적용[m
+[32m+[m[32m| 원칙 | 적용 사례 |[m
+[32m+[m[32m|------|-----------|[m
+[32m+[m[32m| **S**ingle Responsibility | 각 클래스는 하나의 책임만 (LLM, Agent, UI 분리) |[m
+[32m+[m[32m| **O**pen/Closed | Factory를 통한 확장 (새 LLM 추가 시 기존 코드 수정 불필요) |[m
+[32m+[m[32m| **L**iskov Substitution | 모든 LLM은 BaseLLM으로 치환 가능 |[m
+[32m+[m[32m| **I**nterface Segregation | 클라이언트는 필요한 인터페이스만 의존 |[m
+[32m+[m[32m| **D**ependency Inversion | 구체 클래스가 아닌 추상화(BaseLLM)에 의존 |[m
+[32m+[m
+[32m+[m[32m### 지원 LLM 제공자[m
+[32m+[m[32m- ✅ **Ollama**: 로컬 LLM (무료, 프라이버시 보장)[m
+[32m+[m[32m  - llama2, llama3, gemma, mistral 등[m
+[32m+[m[32m- ✅ **OpenAI**: 클라우드 LLM (API 키 필요)[m
+[32m+[m[32m  - gpt-4, gpt-3.5-turbo 등[m
+[32m+[m[32m- 🔜 **확장 가능**: Anthropic Claude, Google Gemini 등 추가 가능[m
+ [m
+ ## 폴더/파일 구조[m
+ ```[m
+ project/[m
+ ├─ llm/[m
+[31m-│   ├─ base.py           # LLM 추상화(ABC)[m
+[31m-│   └─ ollama.py         # Ollama LLM 구현[m
+[32m+[m[32m│   ├─ __init__.py         # 모듈 인터페이스[m
+[32m+[m[32m│   ├─ base_llm.py         # LLM 추상 기반 클래스 (ABC)[m
+[32m+[m[32m│   ├─ ollama.py           # Ollama LLM 구현[m
+[32m+[m[32m│   ├─ openai_llm.py       # OpenAI LLM 구현[m
+[32m+[m[32m│   ├─ factory.py          # LLM Factory 패턴[m
+[32m+[m[32m│   └─ example_usage.py    # 사용 예제[m
+ ├─ agent/[m
+[31m-│   └─ simple_agent.py   # 단순 에이전트[m
+[32m+[m[32m│   └─ memory_agent.py     # 메모리 기반 에이전트[m
+ ├─ ui/[m
+[31m-│   └─ streamlit_ui.py   # Streamlit UI[m
+[31m-├─ main.py               # 전체 조립 및 실행 엔트리포인트[m
+[31m-├─ requirements.txt      # 의존성 목록[m
+[31m-├─ RULES.md              # 프로젝트 개발 규칙(SOLID 등)[m
+[31m-└─ README.md             # (이 문서)[m
+[31m-```[m
+[31m-[m
+[31m-## 실행 방법[m
+[31m-1. **Ollama 서버 실행**[m
+[31m-   ```bash[m
+[31m-   ollama serve[m
+[31m-   ```[m
+[31m-2. **필요시 모델 다운로드 및 로드**[m
+[31m-   ```bash[m
+[31m-   ollama run gemma3n:e4b[m
+[31m-   ```[m
+[31m-3. **필요 패키지 설치**[m
+[31m-   ```bash[m
+[31m-   pip install -r requirements.txt[m
+[31m-   ```[m
+[31m-4. **Streamlit UI 실행**[m
+[31m-   ```bash[m
+[31m-   streamlit run main.py[m
+[31m-   ```[m
+[31m-5. **웹 브라우저에서 접속**[m
+[31m-   - http://localhost:8501[m
+[31m-[m
+[31m-## 개발 규칙[m
+[31m-- 자세한 내용은 RULES.md 참고[m
+[32m+[m[32m│   └─ streamlit_ui.py     # Streamlit UI[m
+[32m+[m[32m├─ mcp-server/[m
+[32m+[m[32m│   ├─ server/[m
+[32m+[m[32m│   │   └─ main.py         # MCP 서버 (pay 툴)[m
+[32m+[m[32m│   ├─ client/[m
+[32m+[m[32m│   │   └─ main.py         # MCP 클라이언트[m
+[32m+[m[32m│   └─ README.md           # MCP 실행 가이드[m
+[32m+[m[32m├─ main.py                 # 전체 조립 및 실행 엔트리포인트[m
+[32m+[m[32m├─ requirements.txt        # 의존성 목록[m
+[32m+[m[32m├─ RULES.md                # 프로젝트 개발 규칙(SOLID 등)[m
+[32m+[m[32m└─ README.md               # (이 문서)[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## 🚀 빠른 시작[m
+[32m+[m
+[32m+[m[32m### 1️⃣ 필수 패키지 설치[m
+[32m+[m[32m```bash[m
+[32m+[m[32mpip install -r requirements.txt[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### 2️⃣ LLM 제공자 선택 및 실행[m
+[32m+[m
+[32m+[m[32m<details open>[m
+[32m+[m[32m<summary><b>Option A: Ollama 사용 (로컬 LLM, 권장)</b></summary>[m
+[32m+[m
+[32m+[m[32m**장점**: 무료, 빠름, 프라이버시 보장[m
+[32m+[m
+[32m+[m[32m#### 설치 (최초 1회)[m
+[32m+[m[32m```bash[m
+[32m+[m[32m# Ollama 설치: https://ollama.ai/download[m
+[32m+[m
+[32m+[m[32m# 모델 다운로드[m
+[32m+[m[32mollama pull gemma3n:e4b[m
+[32m+[m[32m# 또는[m
+[32m+[m[32mollama pull llama2[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m#### 실행[m
+[32m+[m[32m```bash[m
+[32m+[m[32m# 터미널 1: Ollama 서버 실행[m
+[32m+[m[32mollama serve[m
+[32m+[m
+[32m+[m[32m# 터미널 2: Streamlit UI 실행[m
+[32m+[m[32mstreamlit run main.py[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m</details>[m
+[32m+[m
+[32m+[m[32m<details>[m
+[32m+[m[32m<summary><b>Option B: OpenAI 사용 (클라우드 LLM)</b></summary>[m
+[32m+[m
+[32m+[m[32m**장점**: 강력한 성능, 설치 불필요[m[41m  [m
+[32m+[m[32m**단점**: API 키 필요, 비용 발생[m
+[32m+[m
+[32m+[m[32m#### Linux / macOS[m
+[32m+[m[32m```bash[m
+[32m+[m[32mexport OPENAI_API_KEY='sk-your-api-key-here'[m
+[32m+[m[32mexport LLM_PROVIDER='openai'[m
+[32m+[m[32mexport LLM_MODEL='gpt-4'[m
+[32m+[m
+[32m+[m[32mstreamlit run main.py[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m#### Windows (PowerShell)[m
+[32m+[m[32m```powershell[m
+[32m+[m[32m$env:OPENAI_API_KEY='sk-your-api-key-here'[m
+[32m+[m[32m$env:LLM_PROVIDER='openai'[m
+[32m+[m[32m$env:LLM_MODEL='gpt-4'[m
+[32m+[m
+[32m+[m[32mstreamlit run main.py[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m</details>[m
+[32m+[m
+[32m+[m[32m### 3️⃣ 웹 브라우저 접속[m
+[32m+[m[32m브라우저가 자동으로 열리거나, 수동으로 접속:[m
+[32m+[m[32m```[m
+[32m+[m[32mhttp://localhost:8501[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m### 4️⃣ MCP 서버 테스트 (선택사항)[m
+[32m+[m[32m```bash[m
+[32m+[m[32mcd mcp-server[m
+[32m+[m[32mpython client/main.py[m
+[32m+[m[32m```[m
+[32m+[m[32m📖 자세한 내용: [mcp-server/README.md](

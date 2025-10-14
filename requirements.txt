@@ -1,5 +1,10 @@
+requests>=2.31.0
 fastapi
 uvicorn
 langchain>=0.1.0
 langchain_community>=0.0.30
-streamlit 
+langchain-openai>=0.1.0
+streamlit
+openai>=1.0.0 
+python-dotenv>=0.21.0 
+langsmith>=1.0.0 
