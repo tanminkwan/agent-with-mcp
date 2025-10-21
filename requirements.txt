@@ -8,3 +8,5 @@ streamlit
 openai>=1.0.0 
 python-dotenv>=0.21.0 
 langsmith>=1.0.0 
+langgraph>=0.2.0
+pygraphviz>=1.11
