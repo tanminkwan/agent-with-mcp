@@ -53,21 +53,30 @@ project/
 │   │   ├─ factory.py      # Graph 생성/선택 팩토리 (AGENT_GRAPH)
 │   │   └─ purchase_graph.py # 예시 그래프 구현(세부 설명 생략)
 │   └─ nodes/
-│       ├─ purchase_nodes.py # 예시 노드 모음(세부 설명 생략)
-│       └─ llm_utils.py      # .env 기반 LLM 생성 유틸(LLMFactory 사용)
+│       ├─ llm_utils.py      # .env 기반 LLM 생성 유틸(LLMFactory 사용)
+│       └─ purchase_nodes.py # 예시 노드 모음(세부 설명 생략)
 ├─ ui/
 │   └─ streamlit_ui.py     # Streamlit UI
 ├─ mcp-server/
 │   ├─ server/
 │   │   ├─ app.py          # MCP 서버 정의 (툴 등록)
-│   │   └─ sse_main.py     # SSE 서버 실행 진입점
+│   │   ├─ sse_main.py     # SSE 서버 실행 진입점
+│   │   └─ stdio_main.py   # STDIO 서버 실행 진입점
 │   ├─ client/
-│   │   ├─ multi_main.py   # LangGraph/Agent 예제 클라이언트
+│   │   ├─ multi_main.py   # LangGraph/Agent 데모 클라이언트
+│   │   ├─ sse_main.py     # SSE 클라이언트 진입점
+│   │   ├─ stdio_main.py   # STDIO 클라이언트 진입점
 │   │   └─ utils.py        # 클라이언트 유틸
+│   ├─ mcp_servers.json    # 클라이언트 서버 설정
+│   ├─ requirements.txt    # MCP 전용 의존성
 │   └─ README.md           # MCP 실행 가이드
 ├─ main.py                 # 전체 조립 및 실행 엔트리포인트
+├─ example.env             # 환경변수 예시
 ├─ requirements.txt        # 의존성 목록
 ├─ RULES.md                # 프로젝트 개발 규칙(SOLID 등)
+├─ test_llm.py             # 테스트 스크립트
+├─ test_openai.py          # 테스트 스크립트
+├─ purchase_flow.png       # 그래프 렌더링 예시(옵션)
 └─ README.md               # (이 문서)
 ```
 
@@ -187,7 +196,7 @@ http://localhost:8501
 ### 4️⃣ MCP 서버 테스트 (선택사항)
 ```bash
 cd mcp-server
-python client/main.py
+python client/multi_main.py
 ```
 📖 자세한 내용: [mcp-server/README.md](mcp-server/README.md)
 
@@ -246,7 +255,7 @@ flowchart TD
     GRAPH --> NODES
     NODES -->|.env 읽기| LLMF
     LLMF -->|as_langchain_model| NODES
-    NODES -->|도구 호출(Optional MCP)| GRAPH
+    NODES -->|도구 호출/Optional MCP| GRAPH
     GRAPH -->|final GraphState| AGENT
     AGENT -->|output 필드만 반환| UI
 ```
@@ -277,6 +286,7 @@ classDiagram
     GraphFactory ..> GraphInterface : returns
     MemoryAgent --> GraphInterface : uses
     GraphInterface ..> NodeLLMUtils : nodes call
+    NodeLLMUtils ..> LLMFactory : create()
 
     %% LLM 계층 (변경 없음)
     class BaseLLM {
