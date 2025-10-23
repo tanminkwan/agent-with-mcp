@@ -7,13 +7,13 @@
 
 ## 📋 개요
 
-**SOLID 원칙**을 철저히 준수하여 설계된 확장 가능한 대화형 챗봇 프레임워크입니다.
+**SOLID 원칙**을 준수한 확장 가능한 대화형 챗봇 프레임워크입니다. 핵심은 **Graph-driven 아키텍처**로, 대화 흐름을 그래프로 정의하고, 각 노드가 자신의 LLM을 **.env + LLMFactory**로 독립 선택합니다.
 
 핵심 기능:
-- 🔄 **다중 LLM 지원**: Ollama(로컬) / OpenAI(클라우드) 간 동적 전환
-- 🏭 **Factory 패턴**: 런타임에 LLM 제공자 선택
-- 🔌 **MCP 프로토콜**: Model Context Protocol 기반 툴 서버
-- 🧩 **모듈형 아키텍처**: 느슨한 결합(Loose Coupling)과 높은 응집도(High Cohesion)
+- 🕸️ **Graph-driven**: 대화/업무 흐름을 그래프로 정의하고 실행
+- 🧩 **노드 단위 LLM 선택**: 각 노드가 .env 구성에 따라 LLM을 자율 선택
+- 🏭 **Factory 패턴**: LLM 생성 책임을 팩토리로 분리하여 OCP/DIP 준수
+- 🔌 **MCP 연동**: Model Context Protocol 기반 외부 툴 호출
 - 🎨 **Streamlit UI**: 웹 기반 인터랙티브 인터페이스
 
 ## ✨ 주요 특징
@@ -47,14 +47,23 @@ project/
 │   ├─ factory.py          # LLM Factory 패턴
 │   └─ example_usage.py    # 사용 예제
 ├─ agent/
-│   └─ memory_agent.py     # 메모리 기반 에이전트
+│   ├─ memory_agent.py     # 그래프 주도 에이전트 (GraphInterface 주입)
+│   ├─ graphs/
+│   │   ├─ base.py         # GraphInterface (ABC)
+│   │   ├─ factory.py      # Graph 생성/선택 팩토리 (AGENT_GRAPH)
+│   │   └─ purchase_graph.py # 예시 그래프 구현(세부 설명 생략)
+│   └─ nodes/
+│       ├─ purchase_nodes.py # 예시 노드 모음(세부 설명 생략)
+│       └─ llm_utils.py      # .env 기반 LLM 생성 유틸(LLMFactory 사용)
 ├─ ui/
 │   └─ streamlit_ui.py     # Streamlit UI
 ├─ mcp-server/
 │   ├─ server/
-│   │   └─ main.py         # MCP 서버 (pay 툴)
+│   │   ├─ app.py          # MCP 서버 정의 (툴 등록)
+│   │   └─ sse_main.py     # SSE 서버 실행 진입점
 │   ├─ client/
-│   │   └─ main.py         # MCP 클라이언트
+│   │   ├─ multi_main.py   # LangGraph/Agent 예제 클라이언트
+│   │   └─ utils.py        # 클라이언트 유틸
 │   └─ README.md           # MCP 실행 가이드
 ├─ main.py                 # 전체 조립 및 실행 엔트리포인트
 ├─ requirements.txt        # 의존성 목록
@@ -69,7 +78,19 @@ project/
 pip install -r requirements.txt
 ```
 
-### 2️⃣ LLM 제공자 선택 및 실행
+### 2️⃣ 실행
+
+터미널 1: MCP SSE 서버 실행
+```bash
+python mcp-server/server/sse_main.py
+```
+
+터미널 2: Streamlit UI 실행
+```bash
+streamlit run main.py
+```
+
+아래 LLM 설정 옵션은 각 노드가 .env를 통해 자동 반영합니다.
 
 <details open>
 <summary><b>Option A: Ollama 사용 (로컬 LLM, 권장)</b></summary>
@@ -177,9 +198,12 @@ python client/main.py
 .env 파일을 사용하여 환경변수를 설정합니다. `example.env` 파일을 참고하여 필요한 변수를 설정하세요.
 
 ```plaintext
-# LLM 기본 설정
+# LLM 기본 설정 (노드에서 기본값으로 사용)
 LLM_PROVIDER=ollama
 LLM_MODEL=gemma3n:e4b
+
+# 그래프 선택
+AGENT_GRAPH=purchase
 
 # OpenAI 사용 시
 OPENAI_API_KEY=your-openai-api-key-here
@@ -192,6 +216,12 @@ LANGSMITH_TRACING=true
 LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
 LANGCHAIN_API_KEY=
 LANGCHAIN_PROJECT=langchain_study
+
+# (선택) 노드별 LLM 오버라이드 예시
+# NODE_POLITENESS_PROVIDER=openai
+# NODE_POLITENESS_MODEL=gpt-4o-mini
+# NODE_AGENT_PROVIDER=ollama
+# NODE_AGENT_MODEL=llama3.1
 ```
 
 추가 팁:
@@ -200,50 +230,55 @@ LANGCHAIN_PROJECT=langchain_study
 
 ---
 
-## 🏗️ 아키텍처 다이어그램
+## 🏗️ Graph-driven 아키텍처(개요)
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     Streamlit UI                        │
-│                   (streamlit_ui.py)                     │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│                    Memory Agent                          │
-│                  (memory_agent.py)                       │
-│         - ConversationBufferMemory                       │
-│         - ConversationChain                              │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│                   LLM Factory                            │
-│                   (factory.py)                           │
-│         - create(provider, model)                        │
-│         - register(provider, class)                      │
-└──────────┬──────────────────────┬───────────────────────┘
-           │                      │
-           ▼                      ▼
-┌──────────────────┐    ┌──────────────────┐
-│   OllamaLLM      │    │   OpenAILLM      │
-│  (ollama.py)     │    │ (openai_llm.py)  │
-└──────────────────┘    └──────────────────┘
-           │                      │
-           └──────────┬───────────┘
-                      │
-                      ▼
-           ┌──────────────────┐
-           │    BaseLLM       │
-           │  (base_llm.py)   │
-           │   <<abstract>>   │
-           └──────────────────┘
+```mermaid
+flowchart TD
+    UI[Streamlit UI]
+    AGENT[MemoryAgent]
+    GFACT[GraphFactory]
+    GRAPH[GraphInterface 구현]
+    NODES[Nodes]
+    LLMF[LLMFactory]
+
+    UI -->|user input| AGENT
+    AGENT -->|ainvoke/invoke| GRAPH
+    GRAPH --> NODES
+    NODES -->|.env 읽기| LLMF
+    LLMF -->|as_langchain_model| NODES
+    NODES -->|도구 호출(Optional MCP)| GRAPH
+    GRAPH -->|final GraphState| AGENT
+    AGENT -->|output 필드만 반환| UI
 ```
 
-## 🧭 Mermaid 클래스 구성도
+## 🧭 인터페이스와 팩토리 클래스 구조
 
 ```mermaid
 classDiagram
+    class GraphInterface {
+      + ainvoke(input_text) Dict
+      + invoke(input_text) Dict
+    }
+
+    class GraphFactory {
+      + create(name) GraphInterface
+      + create_from_env() GraphInterface
+    }
+
+    class MemoryAgent {
+      - graph: GraphInterface
+      + chat(user_input) str
+    }
+
+    class NodeLLMUtils {
+      + create_langchain_llm_from_env(prefix) Any
+    }
+
+    GraphFactory ..> GraphInterface : returns
+    MemoryAgent --> GraphInterface : uses
+    GraphInterface ..> NodeLLMUtils : nodes call
+
+    %% LLM 계층 (변경 없음)
     class BaseLLM {
       - model: str
       - config: dict
@@ -274,20 +309,7 @@ classDiagram
       + register(provider, cls)
       + get_available_providers() list~str~
     }
-
-    class MemoryAgent {
-      - memory: ConversationBufferMemory
-      - chain: ConversationChain
-      + chat(user_input) str
-    }
-
-    class StreamlitUI {
-      + run()
-    }
-
     LLMFactory ..> BaseLLM : creates
-    MemoryAgent --> BaseLLM : uses (as LangChain model)
-    StreamlitUI ..> MemoryAgent : holds
 ```
 
 ## 💡 개발 규칙
@@ -304,21 +326,9 @@ classDiagram
 - 타입 힌트 사용 권장
 - Docstring 작성 (Google Style)
 
-## LLM 추상화 아키텍처
+## LLM 추상화 계층(요약)
 
-### SOLID 원칙 적용
-```python
-# BaseLLM (추상 기반 클래스) - 의존성 역전 원칙
-from llm import LLMFactory
-
-# Factory 패턴으로 LLM 생성 - 개방/폐쇄 원칙
-llm = LLMFactory.create('ollama', 'llama2')
-# 또는
-llm = LLMFactory.create('openai', 'gpt-4', temperature=0.7)
-
-# 모든 LLM은 동일한 인터페이스 - 리스코프 치환 원칙
-response = llm([HumanMessage(content="Hello")])
-```
+노드는 `llm_utils.create_langchain_llm_from_env(prefix)`로 자신이 사용할 LLM을 생성합니다. 내부적으로 `LLMFactory.create(provider, model, **kwargs)`를 호출하여 BaseLLM 구현을 반환하고, 필요한 경우 `as_langchain_model()`을 통해 LangChain 호환 모델을 사용합니다.
 
 ### 새로운 LLM 제공자 추가 방법
 ```python

@@ -60,29 +60,17 @@ def example_openai():
 
 
 def example_with_agent():
-    """Agent와 함께 사용하는 예제"""
-    print("\n=== Agent와 함께 사용 예제 ===")
-    
-    # 환경변수나 설정으로 제공자 선택
-    provider = os.getenv('LLM_PROVIDER', 'ollama')  # 기본값: ollama
-    model = os.getenv('LLM_MODEL', 'llama2')        # 기본값: llama2
-    
-    print(f"선택된 제공자: {provider}")
-    print(f"선택된 모델: {model}")
-    
-    # Factory를 통해 LLM 생성
-    if provider == 'openai' and not os.getenv('OPENAI_API_KEY'):
-        print("⚠️  OPENAI_API_KEY가 필요합니다. Ollama로 전환합니다.")
-        provider = 'ollama'
-        model = 'llama2'
-    
-    llm = LLMFactory.create(provider=provider, model=model)
-    
-    # MemoryAgent와 함께 사용
+    """Graph 기반 Agent 사용 예제"""
+    print("\n=== Graph 기반 Agent 사용 예제 ===")
+    from agent.graphs.factory import create_from_env
     from agent.memory_agent import MemoryAgent
-    agent = MemoryAgent(llm)
-    
-    response = agent.chat("파이썬이란 무엇인가요?")
+
+    graph_name = os.getenv('AGENT_GRAPH', 'purchase')
+    print(f"그래프 선택: {graph_name}")
+    graph = create_from_env()
+    agent = MemoryAgent(graph)
+
+    response = agent.chat("돈 12345 지불해")
     print(f"\nAgent 응답: {response}")
 
 
@@ -111,8 +99,7 @@ def main():
     
     print("\n✅ 예제 완료!")
     print("\n💡 사용 방법:")
-    print("   LLM_PROVIDER=ollama LLM_MODEL=llama2 python llm/example_usage.py")
-    print("   LLM_PROVIDER=openai LLM_MODEL=gpt-4 OPENAI_API_KEY=sk-... python llm/example_usage.py")
+    print("   AGENT_GRAPH=purchase python llm/example_usage.py")
 
 
 if __name__ == "__main__":
