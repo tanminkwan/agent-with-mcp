@@ -34,7 +34,7 @@ flowchart TD
 
     G --> H[Optimize_Schedule<br>이동/날씨 기반 일정 최적화]
 
-    H --> I[Present_Result<br>결과 출력 (표/카드뷰 등)]
+    H --> I[Present_Result<br>결과 출력_표.카드뷰 등]
 ```
 ```
 [User_Input]
