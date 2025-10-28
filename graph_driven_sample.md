@@ -20,21 +20,39 @@
 
 ## 🧩 그래프 구조 (개념 설계)
 ```mermaid
-flowchart TD
-    A[User_Input<br>사용자 입력 받기] --> B[Parse_Conditions<br>조건 파싱]
-    B --> C[Validate_Conditions<br>입력 유효성 검사]
+graph TD
 
-    C --> D[Fetch_Weather<br>날씨 정보 수집]
-    C --> E[Fetch_Transport<br>교통편 정보 수집]
-    C --> F[Fetch_Local_Events<br>지역 이벤트/명소 수집]
+    %% === Nodes ===
+    A[User_Input]
+    B[Parse_Conditions]
+    C[Validate_Conditions]
+    D[Fetch_Weather]
+    E[Fetch_Transport]
+    F[Fetch_Local_Events]
+    G[Generate_Itinerary]
+    H[Optimize_Schedule]
+    I[Present_Result]
+    X[Request_More_Info]
 
-    D --> G[Generate_Itinerary<br>여행 일정 초안 생성]
+    %% === Edges with Conditions ===
+    A --> B
+    B --> C
+
+    %% 조건 분기: 유효성 검사 결과에 따라 흐름이 갈림
+    C -->|Valid| D
+    C -->|Missing Info| X
+    X --> B  %% 정보 보완 후 다시 파싱 단계로
+
+    %% 병렬 데이터 수집
+    D --> G
+    C -->|Valid| E
+    C -->|Valid| F
     E --> G
     F --> G
 
-    G --> H[Optimize_Schedule<br>이동/날씨 기반 일정 최적화]
-
-    H --> I[Present_Result<br>결과 출력_표.카드뷰 등]
+    %% 일정 생성 후 최적화 및 결과 출력
+    G --> H
+    H --> I
 ```
 ```
 [User_Input]
