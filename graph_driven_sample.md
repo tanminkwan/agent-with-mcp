@@ -19,7 +19,23 @@
 ---
 
 ## 🧩 그래프 구조 (개념 설계)
+```mermaid
+flowchart TD
+    A[User_Input<br>사용자 입력 받기] --> B[Parse_Conditions<br>조건 파싱]
+    B --> C[Validate_Conditions<br>입력 유효성 검사]
 
+    C --> D[Fetch_Weather<br>날씨 정보 수집]
+    C --> E[Fetch_Transport<br>교통편 정보 수집]
+    C --> F[Fetch_Local_Events<br>지역 이벤트/명소 수집]
+
+    D --> G[Generate_Itinerary<br>여행 일정 초안 생성]
+    E --> G
+    F --> G
+
+    G --> H[Optimize_Schedule<br>이동/날씨 기반 일정 최적화]
+
+    H --> I[Present_Result<br>결과 출력 (표/카드뷰 등)]
+```
 ```
 [User_Input]
      │
