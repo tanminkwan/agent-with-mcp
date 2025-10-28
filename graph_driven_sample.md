@@ -1,11 +1,11 @@
 
-### **user : **
+### user : 
      graph driven 방식으로 genAI agent를 만들꺼야.
      
      agent 용도는 user가 여행 조건을 입력하면 날씨, 교통편 등을 고려해서 여행 스케줄을 짜주는 거야.
      적당한 graph 를 만들어줘
 
-### **Chatgpt Agent : **
+### Chatgpt Agent : 
      좋아, Pearl 🌊.
      “여행 조건 → 날씨·교통·추천 → 여행 스케줄 생성”이라는 목표라면, **Graph-driven Agent 구조**는 아주 잘 맞는 선택이야.
 
