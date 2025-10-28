@@ -56,29 +56,6 @@ graph TD
     G --> H
     H --> I
 ```
-```
-[User_Input]
-     │
-     ▼
-[Parse_Conditions] ──▶ [Validate_Conditions]
-     │                        │
-     │                        ▼
-     │                 [Fetch_Weather]
-     │                        │
-     ▼                        ▼
-[Fetch_Transport]      [Fetch_Local_Events]
-     │                        │
-     └──────────┬─────────────┘
-                ▼
-         [Generate_Itinerary]
-                │
-                ▼
-         [Optimize_Schedule]
-                │
-                ▼
-          [Present_Result]
-```
-
 ---
 
 ## 🧠 각 노드 역할 설명
