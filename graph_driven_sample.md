@@ -22,27 +22,27 @@
 ```mermaid
 graph TD
 
-    %% === Nodes ===
-    A[User_Input]
-    B[Parse_Conditions]
-    C[Validate_Conditions]
-    D[Fetch_Weather]
-    E[Fetch_Transport]
-    F[Fetch_Local_Events]
-    G[Generate_Itinerary]
-    H[Optimize_Schedule]
-    I[Present_Result]
-    X[Request_More_Info]
+    %% === Nodes (circle style) ===
+    A((User_Input))
+    B((Parse_Conditions))
+    C((Validate_Conditions))
+    D((Fetch_Weather))
+    E((Fetch_Transport))
+    F((Fetch_Local_Events))
+    G((Generate_Itinerary))
+    H((Optimize_Schedule))
+    I((Present_Result))
+    X((Request_More_Info))
 
     %% === Edges with Conditions ===
     A --> B
     B --> C
 
-    %% 조건 분기: 유효성 검사 결과에 따라 흐름이 갈림
+    %% 조건 분기
     C -->|Valid| D
     C -->|Missing Info| X
 
-    %% 보완 후 다시 파싱으로 돌아감
+    %% 보완 후 다시 파싱으로 복귀
     X --> B
 
     %% 병렬 데이터 수집
